@@ -22,11 +22,11 @@ modify_virtual_page (virtual_page_t *page);
 physical_page_t
 pageFault (virtual_page_t *page);
 
-void
+physical_page_t
 demandPage ();
 
-void
-run_mmu (process_t *processes, int processCount);
+physical_page_t
+replace_page_NRU ();
 
 #endif // MMU_H
 
