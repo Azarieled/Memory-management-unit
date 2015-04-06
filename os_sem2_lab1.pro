@@ -5,12 +5,12 @@ CONFIG -= qt
 
 QMAKE_CFLAGS += -std=c99
 
-SOURCES += main.c \
-    mmu.c
+SOURCES += src/main.c \
+    src/mmu.c
 
 include(deployment.pri)
 qtcAddDeployment()
 
 HEADERS += \
-    mmu.h
+    src/mmu.h
 
