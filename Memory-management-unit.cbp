@@ -31,9 +31,13 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="main.c">
+		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/mmu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/mmu.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
