@@ -86,18 +86,25 @@ pageFault (virtual_page_t *page)
 {
   printf ("Page fault at virtual page: %llx\n", page->number);
 
+}
+
+physical_address_t
+demand_page ()
+{
   // attempt to find free page
   for (unsigned int i = 0; i < PHYSICAL_PAGE_COUNT; i ++)
     {
       if (g_present_page_table[i] == NULL)
         {
           g_present_page_table[i] = page;
-          return page->physical_page = i * PAGE_SIZE;
+          page->physical_page = i * PAGE_SIZE
+          printf ("Free physical page found at: %llx\n", page->physical_page);
+          return page->physical_page;
         }
     }
-
-    return replace_page(); //TODO handle swap crash
+  return replace_page(); //TODO handle swap crash
 }
+
 
 physical_address_t
 replace_page ()
