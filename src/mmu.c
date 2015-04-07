@@ -8,7 +8,7 @@ virtual_page_t *g_present_page_table [PHYSICAL_PAGE_COUNT];
 process_t *
 get_process(pid_t pid)
 {
-  for (int i = 0; i < MAX_PROCESS_NUMBER; ++i)
+  for (int i = 0; i < g_process_count; ++i)
     {
       if (g_process_table[i].pid == pid)
         {
@@ -42,11 +42,11 @@ read_virtual_page (pid_t pid, size_t number)
 
   if (!p->P)
     {
-      p->physical_page = pageFault (p);
+      pageFault (p);
       p->P = true;
     }
   p->R = true;
-  printf ("Virtual page %lx read.", p->number);
+  printf ("Virtual page %llx read.\n", p->number);
   return p->physical_page;
 }
 
@@ -59,33 +59,40 @@ modify_virtual_page (pid_t pid, size_t number)
 
   if (!p->P)
     {
-      p->physical_page = pageFault(p);
+      pageFault(p);
       p->P = true;
     }
   p->R = true;
   p->M = true;
-  printf ("Virtual page %lx modified.", p->number);
+  printf ("Virtual page %llx modified.\n", p->number);
   return p->physical_page;
+}
+
+void
+resetBitR()
+{
+  for (unsigned int i = 0; i < PHYSICAL_PAGE_COUNT; i ++)
+    {
+      if (g_present_page_table[i] != NULL)
+        {
+          g_present_page_table[i]->R = 0;
+        }
+    }
 }
 
 
 physical_address_t
 pageFault (virtual_page_t *page)
 {
-  printf ("Page fault at virtual page: %lx\n", page->number);
-  return demandPage();
-}
+  printf ("Page fault at virtual page: %llx\n", page->number);
 
-
-physical_address_t
-demandPage ()
-{
   // attempt to find free page
   for (unsigned int i = 0; i < PHYSICAL_PAGE_COUNT; i ++)
     {
-      if (g_present_page_table[i] != NULL)
+      if (g_present_page_table[i] == NULL)
         {
-          return g_present_page_table[i]->physical_page;
+          g_present_page_table[i] = page;
+          return page->physical_page = i * PAGE_SIZE;
         }
     }
 
