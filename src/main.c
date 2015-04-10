@@ -4,15 +4,15 @@
 #include <stdbool.h>
 #include "mmu.h"
 
-#define RANDOM_MAX_VALUE 100
-
 // process behavior
 #define INITIAL_PROCESS_COUNT        5
-#define WORKING_SET_PAGES_1          5
-#define EXTERNAL_PAGES_1            10
+#define MIN_WORKING_SET_PAGES        5
+#define MIN_EXTERNAL_PAGES           10
 #define WORKING_SET_INCREMENT        5
 #define READ_PROBABILITY             0.5
 #define LOCAL_ACCESS_PROBABILITY     0.9
+
+#define RANDOM_MAX_VALUE 100
 
 bool random_boolean(float true_probability)
 {
@@ -21,14 +21,27 @@ bool random_boolean(float true_probability)
 
 int main (void/*int argc, char *argv[]*/)
 {
-  srand (time(NULL)); // init randomizator
+  srand (time(NULL)); // init randomizer
   for (int i = 0; i < INITIAL_PROCESS_COUNT; ++i)
     {
-      create_process_virtual_table (i, i * WORKING_SET_INCREMENT + WORKING_SET_PAGES_1 + EXTERNAL_PAGES_1);
+      create_process_virtual_table (i, i * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES + MIN_EXTERNAL_PAGES);
     }
-  for (int i = 0; i < INT_MAX; ++i) {
-      pid_t pid =  i % INITIAL_PROCESS_COUNT;
-      size_t num = i;                          //TODO randomize
+
+  for (int i = 0; i < 15; ++i) {
+      pid_t pid =  rand() % INITIAL_PROCESS_COUNT;
+      size_t num;
+
+      // rand page
+      if (random_boolean(LOCAL_ACCESS_PROBABILITY))
+        {
+          num = rand() % (MIN_WORKING_SET_PAGES + pid * WORKING_SET_INCREMENT);
+        }
+      else
+        {
+          num = rand() % MIN_EXTERNAL_PAGES + (MIN_WORKING_SET_PAGES + pid * WORKING_SET_INCREMENT);
+        }
+
+      // rand operation
       if (random_boolean(READ_PROBABILITY))
         {
           read_virtual_page(pid, num);

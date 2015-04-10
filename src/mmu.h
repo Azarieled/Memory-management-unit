@@ -13,11 +13,13 @@
 #define MAX_PID SIZE_MAX
 
 // mmu propeties
+#define PAGE_NUMBER_BITS 12
 #define MAX_PROCESS_NUMBER 1024 * 1024
 
 typedef size_t pid_t;
 
 typedef size_t physical_address_t;
+typedef size_t virtual_address_t;
 
 typedef struct
 {
@@ -40,10 +42,10 @@ bool
 create_process_virtual_table (pid_t pid, size_t virtual_pages);
 
 physical_address_t
-read_virtual_page (pid_t pid, size_t number);
+read_virtual_page (pid_t pid, virtual_address_t addr);
 
 physical_address_t
-modify_virtual_page (pid_t pid, size_t number);
+modify_virtual_page (pid_t pid, virtual_address_t addr);
 
 void
 resetBitR();
