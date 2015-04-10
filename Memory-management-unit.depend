@@ -2,7 +2,7 @@
 1428293396 source:d:\proj\2015\c\memory-management-unit\src\main.c
 	<stdio.h>
 	<stdlib.h>
-	"../include/mmu.h"
+	"mmu.h"
 
 1428292836 d:\proj\2015\c\memory-management-unit\include\mmu.h
 	<stdbool.h>
