@@ -42,6 +42,7 @@ read_virtual_page (pid_t pid, virtual_address_t addr)
 
   if (!p->P)
     {
+      printf ("Process %ld: page fault at virtual page: %lx\n", pid, addr);
       pageFault (p);
       p->P = true;
     }
@@ -91,12 +92,14 @@ pageFault (virtual_page_t *page)
       if (g_present_page_table[i] == NULL)
         {
           g_present_page_table[i] = page;
-          return page->physical_page = i * PAGE_SIZE;
+          page->physical_page = i * PAGE_SIZE
+          printf ("Free physical page found at: %llx\n", page->physical_page);
+          return page->physical_page;
         }
     }
-
-    return replace_page(); //TODO handle swap crash
+  return replace_page(); //TODO handle swap crash
 }
+
 
 physical_address_t
 replace_page ()

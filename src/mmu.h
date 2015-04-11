@@ -54,6 +54,12 @@ physical_address_t
 pageFault (virtual_page_t *page);
 
 /*
+ * Function is called during pageFault handling.
+ */
+physical_address_t
+demand_page ()
+
+/*
  * Function is called when there are no free memory to satisfy
  */
 physical_address_t
