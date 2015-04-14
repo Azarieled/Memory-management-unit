@@ -5,14 +5,17 @@
 #include "mmu.h"
 
 // process behavior
-#define INITIAL_PROCESS_COUNT        5
-#define MIN_WORKING_SET_PAGES        5
-#define MIN_EXTERNAL_PAGES           10
-#define WORKING_SET_INCREMENT        5
-#define READ_PROBABILITY             0.5
-#define LOCAL_ACCESS_PROBABILITY     0.9
+#define INITIAL_PROCESS_COUNT                     5
+#define MIN_WORKING_SET_PAGES                     5
+#define MIN_EXTERNAL_PAGES                       10
+#define WORKING_SET_INCREMENT                     5
+#define READ_PROBABILITY                          0.5
+#define LOCAL_ACCESS_PROBABILITY                  0.9
+#define VOLUNTARY_CONTEXT_SWITCHING_PROBABILITY   0.1
+#define INVOLUNTARY_CONTEXT_SWITCHING_TIMER_TICS  4
 
-#define RANDOM_MAX_VALUE 100
+const unsigned int PAGE_ITERATIONS = 10;
+const unsigned int RANDOM_MAX_VALUE = 100
 
 bool random_boolean(float true_probability)
 {
@@ -30,29 +33,18 @@ int main (int argc, char *argv[])
       create_process (i, i * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES + MIN_EXTERNAL_PAGES);
     }
 
-  for (int i = 0; i < 15; ++i) {
-      pid_t pid =  rand() % INITIAL_PROCESS_COUNT;
-      size_t num;
+  pid_t pid;
+  for (int i = 0; i < 15; ++i)
+    {
+      pid =  rand() % INITIAL_PROCESS_COUNT;
+      size_t num = random_boolean (LOCAL_ACCESS_PROBABILITY) ?
+                   rand() % (pid * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES) :
+                   rand() % (MIN_EXTERNAL_PAGES) + pid * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES;
 
-      // rand page
-      if (random_boolean(LOCAL_ACCESS_PROBABILITY))
-        {
-          num = rand() % (MIN_WORKING_SET_PAGES + pid * WORKING_SET_INCREMENT);
-        }
-      else
-        {
-          num = rand() % MIN_EXTERNAL_PAGES + (MIN_WORKING_SET_PAGES + pid * WORKING_SET_INCREMENT);
-        }
-
-      // rand operation
       if (random_boolean(READ_PROBABILITY))
-        {
-          read_virtual_page(pid, num);
-        }
+          read_virtual_page(num);
       else
-        {
-          modify_virtual_page(pid, num);
-        }
+          modify_virtual_page(num);
     }
   return 0;
 }

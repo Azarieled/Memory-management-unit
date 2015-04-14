@@ -16,10 +16,19 @@ resetBitR()
 page_num_t
 pageFault (page_t *page)
 {
+  return
+}
+
+page_num_t
+demand_page ()
+{
+  page_t *table = get_page_table ();
+  unsigned int *size = get_page_table_size ();
+
   // attempt to find free page
-  for (unsigned int i = 0; i < PHYSICAL_PAGE_COUNT; i ++)
+  for (unsigned int i = 0; i < size; i ++)
     {
-      if (g_present_page_table[i] == NULL)
+      if (table[i]) //TODO
         {
           g_present_page_table[i] = page;
           page->physical_page = i * PAGE_SIZE;
@@ -28,12 +37,6 @@ pageFault (page_t *page)
         }
     }
   return replace_page(); //TODO handle swap crash
-}
-
-page_num_t
-demand_page ()
-{
-
 }
 
 
