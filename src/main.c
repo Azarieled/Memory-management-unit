@@ -19,12 +19,15 @@ bool random_boolean(float true_probability)
   return rand() % RANDOM_MAX_VALUE >= true_probability * RANDOM_MAX_VALUE;
 }
 
-int main (void/*int argc, char *argv[]*/)
+/*
+ * Program simulates the work of mmu, that uses NRU algorithm for page faults handling.
+ */
+int main (int argc, char *argv[])
 {
   srand (time(NULL)); // init randomizer
   for (int i = 0; i < INITIAL_PROCESS_COUNT; ++i)
     {
-      create_process_virtual_table (i, i * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES + MIN_EXTERNAL_PAGES);
+      create_process (i, i * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES + MIN_EXTERNAL_PAGES);
     }
 
   for (int i = 0; i < 15; ++i) {

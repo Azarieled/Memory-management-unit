@@ -1,90 +1,20 @@
 #include <stdio.h>
 #include "mmu.h"
 
-process_t       g_process_table      [MAX_PROCESS_NUMBER]; //TODO smarter data structure with deleting process
-unsigned int    g_process_count = 0;
-virtual_page_t *g_present_page_table [PHYSICAL_PAGE_COUNT];
-
-process_t *
-get_process(pid_t pid)
-{
-  for (unsigned int i = 0; i < g_process_count; ++i)
-    {
-      if (g_process_table[i].pid == pid)
-        {
-          return g_process_table + i;
-        }
-    }
-  return NULL;
-}
-
-
-bool
-create_process_virtual_table (pid_t pid, size_t virtual_pages)
-{
-  if (get_process(pid) != NULL)
-    {
-      return false;
-    }
-
-  g_process_table[g_process_count].pages = (virtual_page_t *) malloc(virtual_pages);
-  g_process_table[g_process_count].pid = pid;
-  ++g_process_count;
-  return true;      //TODO swap crash
-}
-
-
-physical_address_t
-read_virtual_page (pid_t pid, virtual_address_t addr)
-{
-  process_t *process = get_process (pid);       //TODO handle NULL
-  virtual_page_t *p = &process->pages [addr >> PAGE_NUMBER_BITS];
-
-  if (!p->P)
-    {
-      printf ("Process %ld: page fault at virtual page: %lx\n", pid, addr);
-      pageFault (p);
-      p->P = true;
-    }
-  p->R = true;
-  printf ("Process %ld: virtual page %lx read.\n", pid, addr);
-  return p->physical_page;
-}
-
-
-physical_address_t
-modify_virtual_page (pid_t pid, virtual_address_t addr)
-{
-  process_t *process = get_process (pid);       //TODO handle NULL
-  virtual_page_t *p = &process->pages [addr >> PAGE_NUMBER_BITS];
-
-  if (!p->P)
-    {
-      printf ("Process %ld: page fault at virtual page: %lx\n", pid, addr);
-      pageFault(p);
-      p->P = true;
-    }
-  p->R = true;
-  p->M = true;
-  printf ("Process %ld: virtual page %lx modified.\n", pid, addr);
-  return p->physical_page;
-}
-
 void
 resetBitR()
 {
-  for (unsigned int i = 0; i < PHYSICAL_PAGE_COUNT; i ++)
+  page_t *table = get_page_table ();
+  unsigned int *size = get_page_table_size ();
+  for (unsigned int i = 0; i < size; i ++)
     {
-      if (g_present_page_table[i] != NULL)
-        {
-          g_present_page_table[i]->R = 0;
-        }
+      table->R = 0;
+      ++table;
     }
 }
 
-
-physical_address_t
-pageFault (virtual_page_t *page)
+page_num_t
+pageFault (page_t *page)
 {
   // attempt to find free page
   for (unsigned int i = 0; i < PHYSICAL_PAGE_COUNT; i ++)
@@ -92,7 +22,7 @@ pageFault (virtual_page_t *page)
       if (g_present_page_table[i] == NULL)
         {
           g_present_page_table[i] = page;
-          page->physical_page = i * PAGE_SIZE
+          page->physical_page = i * PAGE_SIZE;
           printf ("Free physical page found at: %llx\n", page->physical_page);
           return page->physical_page;
         }
@@ -100,45 +30,53 @@ pageFault (virtual_page_t *page)
   return replace_page(); //TODO handle swap crash
 }
 
+page_num_t
+demand_page ()
+{
 
-physical_address_t
+}
+
+
+page_num_t
 replace_page ()
 {
   return NRU ();
 }
 
-physical_address_t
+page_num_t
 NRU ()
 {
+  page_t *table = get_page_table ();
+  unsigned int *size = get_page_table_size ();
   unsigned int i;
 
   // class 0
-  for (i = 0; i < PHYSICAL_PAGE_COUNT; i ++)
+  for (i = 0; i < size; i ++)
     {
-      if (!g_present_page_table[i]->R & !g_present_page_table[i]->M)
+      if (!table[i].R & !table[i].M)
         {
-          return g_present_page_table[i]->physical_page;
+          return table[i].page_frame;
         }
     }
 
   // class 1
-  for (i = 0; i < PHYSICAL_PAGE_COUNT; i ++)
+  for (i = 0; i < size; i ++)
     {
-      if (!g_present_page_table[i]->R & g_present_page_table[i]->M)
+      if (!table[i].R & table[i].M)
         {
-          return g_present_page_table[i]->physical_page;
+          return table[i].page_frame;
         }
     }
 
   // class 2
-  for (i = 0; i < PHYSICAL_PAGE_COUNT; i ++)
+  for (i = 0; i < size; i ++)
     {
-      if (g_present_page_table[i]->R & !g_present_page_table[i]->M)
+      if (table[i].R & !table[i].M)
         {
-          return g_present_page_table[i]->physical_page;
+          return table[i].page_frame;
         }
     }
 
   // if we reach here, - all pages are class 3
-  return g_present_page_table[0]->physical_page;
+  return table[0].page_frame;
 }
