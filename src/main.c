@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdbool.h>
-#include "mmu.h"
+#include "os.h"
 
 // process behavior
 #define INITIAL_PROCESS_COUNT                     5
@@ -15,9 +14,10 @@
 #define INVOLUNTARY_CONTEXT_SWITCHING_TIMER_TICS  4
 
 const unsigned int PAGE_ITERATIONS = 10;
-const unsigned int RANDOM_MAX_VALUE = 100
+const unsigned int RANDOM_MAX_VALUE = 100;
 
-bool random_boolean(float true_probability)
+char 
+random_boolean(float true_probability)
 {
   return rand() % RANDOM_MAX_VALUE >= true_probability * RANDOM_MAX_VALUE;
 }
@@ -25,7 +25,8 @@ bool random_boolean(float true_probability)
 /*
  * Program simulates the work of mmu, that uses NRU algorithm for page faults handling.
  */
-int main (int argc, char *argv[])
+int 
+main (int argc, char *argv[])
 {
   srand (time(NULL)); // init randomizer
   for (int i = 0; i < INITIAL_PROCESS_COUNT; ++i)
@@ -33,18 +34,30 @@ int main (int argc, char *argv[])
       create_process (i, i * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES + MIN_EXTERNAL_PAGES);
     }
 
+  // tics before involuntary context switching
+  // involuntary context switching on thee 1st iteration
+  unsigned int tics = INVOLUNTARY_CONTEXT_SWITCHING_TIMER_TICS;
   pid_t pid;
   for (int i = 0; i < 15; ++i)
     {
-      pid =  rand() % INITIAL_PROCESS_COUNT;
+      if (tics >= INVOLUNTARY_CONTEXT_SWITCHING_TIMER_TICS
+          || random_boolean(VOLUNTARY_CONTEXT_SWITCHING_PROBABILITY))
+        {
+          pid =  rand() % INITIAL_PROCESS_COUNT;
+          ++tics;
+        }
       size_t num = random_boolean (LOCAL_ACCESS_PROBABILITY) ?
                    rand() % (pid * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES) :
                    rand() % (MIN_EXTERNAL_PAGES) + pid * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES;
 
-      if (random_boolean(READ_PROBABILITY))
-          read_virtual_page(num);
-      else
-          modify_virtual_page(num);
+	  if (random_boolean(READ_PROBABILITY)) 
+	  {
+		read_virtual_page(num);
+	  }
+	  else
+	  {
+        modify_virtual_page(num);
+	  }
     }
   return 0;
 }

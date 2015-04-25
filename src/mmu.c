@@ -1,85 +1,43 @@
-#include <stdio.h>
 #include "mmu.h"
 
+page_t *g_page_table = NULL;
+unsigned int g_page_table_size = 0;
+
+page_t *
+get_page_table ()
+{
+  return g_page_table;
+}
+
 void
-resetBitR()
+set_page_table (page_t *new_page_table)
 {
-  page_t *table = get_page_table ();
-  unsigned int *size = get_page_table_size ();
-  for (unsigned int i = 0; i < size; i ++)
-    {
-      table->R = 0;
-      ++table;
-    }
+  g_page_table = new_page_table;
 }
 
-page_num_t
-pageFault (page_t *page)
+unsigned int get_page_table_size ()
 {
-  return
+  return g_page_table_size;
 }
 
-page_num_t
-demand_page ()
+void
+set_page_table_size (unsigned int new_size)
 {
-  page_t *table = get_page_table ();
-  unsigned int *size = get_page_table_size ();
-
-  // attempt to find free page
-  for (unsigned int i = 0; i < size; i ++)
-    {
-      if (table[i]) //TODO
-        {
-          g_present_page_table[i] = page;
-          page->physical_page = i * PAGE_SIZE;
-          printf ("Free physical page found at: %llx\n", page->physical_page);
-          return page->physical_page;
-        }
-    }
-  return replace_page(); //TODO handle swap crash
+  g_page_table_size = new_size;
 }
 
-
-page_num_t
-replace_page ()
+physical_address_t
+convert (virtual_address_t addr, char modification)
 {
-  return NRU ();
-}
+	int page_num = addr >> PAGE_NUMBER_BITS;
+	page_t *p = g_page_table + page_num;
 
-page_num_t
-NRU ()
-{
-  page_t *table = get_page_table ();
-  unsigned int *size = get_page_table_size ();
-  unsigned int i;
-
-  // class 0
-  for (i = 0; i < size; i ++)
-    {
-      if (!table[i].R & !table[i].M)
-        {
-          return table[i].page_frame;
-        }
-    }
-
-  // class 1
-  for (i = 0; i < size; i ++)
-    {
-      if (!table[i].R & table[i].M)
-        {
-          return table[i].page_frame;
-        }
-    }
-
-  // class 2
-  for (i = 0; i < size; i ++)
-    {
-      if (table[i].R & !table[i].M)
-        {
-          return table[i].page_frame;
-        }
-    }
-
-  // if we reach here, - all pages are class 3
-  return table[0].page_frame;
+	if (!p->P)
+	{
+      printf("Page fault at virtual page: %lx\n", page_num);
+	  page_fault(p);
+	  p->P = 1;
+	}
+	p->R = 1;
+	p->M |= modification;
 }
