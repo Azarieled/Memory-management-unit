@@ -50,15 +50,14 @@ main (int argc, char *argv[])
                    rand() % (pid * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES) :
                    rand() % (MIN_EXTERNAL_PAGES) + pid * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES;
 
-	  if (random_boolean(READ_PROBABILITY)) 
-	  {
-		read_virtual_page(num);
-	  }
-	  else
-	  {
-        modify_virtual_page(num);
-	  }
+      if (random_boolean(READ_PROBABILITY)) 
+	{
+           read_virtual_page(num);
+	}
+      else
+        { 
+          modify_virtual_page(num);
+        }
     }
   return 0;
 }
-
