@@ -40,23 +40,25 @@ main (int argc, char *argv[])
   pid_t pid;
   for (int i = 0; i < 15; ++i)
     {
-      if (tics >= INVOLUNTARY_CONTEXT_SWITCHING_TIMER_TICS
-          || random_boolean(VOLUNTARY_CONTEXT_SWITCHING_PROBABILITY))
+      if (tics >= INVOLUNTARY_CONTEXT_SWITCHING_TIMER_TICS || random_boolean(VOLUNTARY_CONTEXT_SWITCHING_PROBABILITY))
         {
           pid =  rand() % INITIAL_PROCESS_COUNT;
           ++tics;
         }
+
+      // random address choice
       size_t num = random_boolean (LOCAL_ACCESS_PROBABILITY) ?
                    rand() % (pid * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES) :
                    rand() % (MIN_EXTERNAL_PAGES) + pid * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES;
+      virtual_address_t addr = num * PAGE_SIZE + rand() % PAGE_SIZE;
 
       if (random_boolean(READ_PROBABILITY)) 
 	{
-           read_virtual_page(num);
+           read_virtual_page(addr);
 	}
       else
         { 
-          modify_virtual_page(num);
+          modify_virtual_page(addr);
         }
     }
   return 0;
