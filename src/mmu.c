@@ -33,11 +33,11 @@ convert (virtual_address_t addr, char modification)
 	page_t *p = g_page_table + page_num;
 
 	if (!p->P)
-	{
-      printf("Page fault at virtual page: %lx\n", page_num);
-	  page_fault(p);
-	  p->P = 1;
-	}
+	  {
+	    printf("Page fault at virtual page: %lx\n", page_num);
+	    page_fault(p);
+	    p->P = 1;
+	  }
 	p->R = 1;
 	p->M |= modification;
 }

@@ -29,6 +29,8 @@ int
 main (int argc, char *argv[])
 {
   srand (time(NULL)); // init randomizer
+  load_RAM ();
+
   for (int i = 0; i < INITIAL_PROCESS_COUNT; ++i)
     {
       create_process (i, i * WORKING_SET_INCREMENT + MIN_WORKING_SET_PAGES + MIN_EXTERNAL_PAGES);

@@ -16,6 +16,9 @@ typedef struct process_t
 	page_t *page_table;
 } process_t;
 
+void
+load_RAM ();
+
 /*
  * Returns 0 if created, -1 if process is already created, 1 if pid > MAX_PID.
  */
