@@ -11,7 +11,8 @@
 #define READ_PROBABILITY                          0.5
 #define LOCAL_ACCESS_PROBABILITY                  0.9
 #define VOLUNTARY_CONTEXT_SWITCHING_PROBABILITY   0.1
-#define INVOLUNTARY_CONTEXT_SWITCHING_TIMER_TICS  4
+#define INVOLUNTARY_CONTEXT_SWITCHING_TIMER_TICS  16
+#define CLEAR_STATISTICS_TIMER_TICS               4
 
 const unsigned int PAGE_ITERATIONS = 10;
 const unsigned int RANDOM_MAX_VALUE = 100;
@@ -37,15 +38,21 @@ main (int argc, char *argv[])
     }
 
   // tics before involuntary context switching
-  // involuntary context switching on thee 1st iteration
+  // involuntary context switching on the 1st iteration
   unsigned int tics = INVOLUNTARY_CONTEXT_SWITCHING_TIMER_TICS;
   pid_t pid;
-  for (int i = 0; i < 15; ++i)
+  for (int i = 0; i < 10000; ++i)
     {
+      ++tics;
       if (tics >= INVOLUNTARY_CONTEXT_SWITCHING_TIMER_TICS || random_boolean(VOLUNTARY_CONTEXT_SWITCHING_PROBABILITY))
         {
           pid =  rand() % INITIAL_PROCESS_COUNT;
-          ++tics;
+          switch_context(pid);
+          tics = 0;
+        }
+      if (tics >= CLEAR_STATISTICS_TIMER_TICS)
+        {
+          resetBitR ();
         }
 
       // random address choice
@@ -56,11 +63,11 @@ main (int argc, char *argv[])
 
       if (random_boolean(READ_PROBABILITY)) 
 	{
-           read_virtual_page(addr);
+	   printf("Read from physical address %lu\n", read_virtual_page(addr));
 	}
       else
         { 
-          modify_virtual_page(addr);
+          printf("Write to physical address %lu\n", modify_virtual_page(addr));
         }
     }
   return 0;

@@ -6,12 +6,13 @@
 #include <math.h>
 
 // hardware props
-const size_t       MAIN_MEMORY_SIZE = 512 * 1024 * 1024;  // 512 MB
+#define MAIN_MEMORY_SIZE 512 * 1024 * 1024  // 512 MB
 
 // paging props
 #define PAGE_SIZE        4096                             //   4 KB
 #define PAGE_NUMBER_BITS 12
-#define PAGE_FRAME_COUNT MAIN_MEMORY_SIZE / PAGE_SIZE
+#define PAGE_FRAME_COUNT (MAIN_MEMORY_SIZE / PAGE_SIZE)
+#define PAGE_NUMBER_MASK (PAGE_SIZE - 1)
 
 #define SWAP_SIZE        1024 * 1024 * 1024              //   1 GB
 

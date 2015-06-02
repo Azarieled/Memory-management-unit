@@ -8,14 +8,18 @@ page_frame_list_t *g_free_page_frame_list = NULL;
 void
 load_RAM ()
 {
-  g_free_page_frame_list = malloc(sizeof (page_frame_list_t));
-  for (size_t i = 0; i < PAGE_FRAME_COUNT - 1; ++i)
+  page_num_t last_page = PAGE_FRAME_COUNT - 1;
+  page_frame_list_t *cur = malloc(sizeof (page_frame_list_t));
+  g_free_page_frame_list = cur;
+
+  for (size_t i = 0; i < last_page; ++i)
     {
-      g_free_page_frame_list->current = i;
-      g_free_page_frame_list->next = malloc(sizeof (page_frame_list_t));
-      g_free_page_frame_list = g_free_page_frame_list->next;
+      cur->current = i;
+      cur->next = malloc(sizeof (page_frame_list_t));
+      cur = cur->next;
     }
-  g_free_page_frame_list->next = NULL;
+  cur->next = NULL;
+  cur->current = last_page;
 }
 
 int
@@ -64,6 +68,7 @@ resetBitR()
   for (size_t i = 0; i < size; i++)
     {
       table->R = 0;
+      table->M = 0;
       ++table;
     }
 }
@@ -141,11 +146,13 @@ NRU ()
 
 physical_address_t read_virtual_page(virtual_address_t addr)
 {
+  printf("Reading from address: %lu\n", addr);
   return convert(addr, 0);
 }
 
 
 physical_address_t modify_virtual_page(virtual_address_t addr)
 {
+  printf("Writing to address: %lu\n", addr);
   return convert(addr, 1);
 }
