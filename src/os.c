@@ -68,7 +68,6 @@ resetBitR()
   for (size_t i = 0; i < size; i++)
     {
       table->R = 0;
-      table->M = 0;
       ++table;
     }
 }
